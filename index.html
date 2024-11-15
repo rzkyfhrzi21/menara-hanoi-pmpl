@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Game Menara Hanoi</title>
+    <meta
+      name="description"
+      content="Game Menara Hanoi - Latihan logika untuk memindahkan cakram dengan aturan tertentu. Dibuat oleh Rizky Fahrezi, Zakky Ahjami Rahim, dan Muhammad Aldi."
+    />
+    <meta
+      name="keywords"
+      content="Menara Hanoi, game logika, game cakram, latihan logika, Rizky Fahrezi, Zakky Ahjami Rahim, Muhammad Aldi"
+    />
+    <meta
+      name="author"
+      content="Rizky Fahrezi, Zakky Ahjami Rahim, Muhammad Aldi"
+    />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin-top: 10px;
+        color: white; /* Warna teks default */
+      }
+      h1 {
+        color: #333; /* Warna teks gelap untuk judul */
+      }
+      .container {
+        display: flex;
+        justify-content: space-around;
+        align-items: flex-end;
+        height: 350px;
+        width: 90%; /* Membuat lebih lebar di perangkat kecil */
+        margin: auto;
+        max-width: 1000px; /* Membatasi lebar maksimum */
+      }
+      .peg {
+        width: 30px;
+        height: 250px;
+        background-color: #8b4513;
+        position: relative;
+        border-radius: 10px;
+      }
+      .disk {
+        height: 30px;
+        border-radius: 5px;
+        position: absolute;
+        bottom: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-weight: bold;
+        font-size: 16px;
+        transition: box-shadow 0.3s ease, transform 0.3s ease;
+      }
+      .disk[data-size="1"] {
+        width: 190px;
+        background-color: #ff5733;
+      }
+      .disk[data-size="2"] {
+        width: 80px;
+        background-color: #ffbd33;
+      }
+      .disk[data-size="3"] {
+        width: 100px;
+        background-color: #33c1ff;
+      }
+      .disk[data-size="4"] {
+        width: 120px;
+        background-color: #33ff57;
+      }
+      .disk[data-size="5"] {
+        width: 140px;
+        background-color: #9b33ff;
+      }
+      .status {
+        margin-top: 20px;
+        font-size: 20px;
+        color: #333; /* Mengubah warna teks status */
+      }
+      .input-group {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 20px;
+        flex-wrap: wrap; /* Agar input tidak terlalu sempit pada layar kecil */
+      }
+      label {
+        font-weight: bold;
+        margin-right: 5px;
+      }
+      input,
+      button {
+        padding: 10px;
+        font-size: 16px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        width: 150px; /* Ukuran input yang lebih besar */
+      }
+      button {
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      footer {
+        margin-top: 20px;
+        background-color: rgba(
+          240,
+          240,
+          240,
+          0.8
+        ); /* Warna footer yang lebih lembut */
+        padding: 15px;
+        font-size: 14px;
+        color: #333; /* Mengubah warna teks footer */
+        border-top: 1px solid #ccc;
+      }
+      /* Menambahkan responsivitas */
+      @media (max-width: 768px) {
+        .container {
+          flex-direction: column;
+          align-items: center;
+          height: auto;
+        }
+        .peg {
+          margin-bottom: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Program Menara Hanoi</h1>
+    <div class="container">
+      <div id="peg1" class="peg">
+        <div class="disk" data-size="5">5</div>
+        <div class="disk" data-size="4">4</div>
+        <div class="disk" data-size="3">3</div>
+        <div class="disk" data-size="2">2</div>
+        <div class="disk" data-size="1">1</div>
+      </div>
+      <div id="peg2" class="peg"></div>
+      <div id="peg3" class="peg"></div>
+    </div>
+    <div class="status">
+      <p id="statusText">
+        Masukkan Cakram dan Tiang Tujuan untuk Memindahkan Cakram.
+      </p>
+      <div class="input-group">
+        <label for="diskNumber">Cakram:</label>
+        <input
+          type="number"
+          id="diskNumber"
+          placeholder="Ukuran (1-5)"
+          min="1"
+          max="5"
+        />
+        <label for="toPeg">Tiang Tujuan:</label>
+        <input
+          type="number"
+          id="toPeg"
+          placeholder="Tujuan (1-3)"
+          min="1"
+          max="3"
+        />
+        <button onclick="moveDisk()">Pindahkan</button>
+      </div>
+      <button onclick="resetGame()" style="margin-top: 10px">
+        Mulai Ulang
+      </button>
+    </div>
+    <footer>
+      <p>Program ini dibuat oleh:</p>
+      <p><strong>Rizky Fahrezi, Zakky Ahjami Rahim, Muhammad Aldi</strong></p>
+      <p>© 2024 Kelompok PMPL 3TI3</p>
+    </footer>
+
+    <script>
+      let moves = 0;
+
+      function moveDisk() {
+        const pegs = [
+          document.getElementById("peg1"),
+          document.getElementById("peg2"),
+          document.getElementById("peg3"),
+        ];
+        const statusText = document.getElementById("statusText");
+        const diskSize = parseInt(document.getElementById("diskNumber").value);
+        const toPeg = parseInt(document.getElementById("toPeg").value) - 1;
+
+        if (!diskSize || toPeg < 0 || toPeg > 2) {
+          statusText.innerHTML = "Masukkan cakram dan tiang tujuan yang valid!";
+          return;
+        }
+
+        let fromPeg = null;
+        pegs.forEach((peg, index) => {
+          const disk = peg.querySelector(`.disk[data-size="${diskSize}"]`);
+          if (disk && (!fromPeg || disk.parentNode === peg)) {
+            fromPeg = index;
+          }
+        });
+
+        if (fromPeg === null) {
+          statusText.innerHTML = "Cakram tidak ditemukan di tiang mana pun!";
+          return;
+        }
+        const sourcePeg = pegs[fromPeg];
+        const targetPeg = pegs[toPeg];
+
+        const disksToMove = [];
+        let currentDisk = sourcePeg.querySelector(
+          `.disk[data-size="${diskSize}"]`
+        );
+        while (currentDisk) {
+          disksToMove.push(currentDisk);
+          currentDisk = currentDisk.nextElementSibling;
+        }
+
+        if (!isValidMove(targetPeg, disksToMove)) {
+          statusText.innerHTML = `Cakram tidak bisa dipindahkan ke tiang tujuan!`;
+          return;
+        }
+
+        disksToMove.forEach((disk) => targetPeg.appendChild(disk));
+        adjustDiskPositions(sourcePeg);
+        adjustDiskPositions(targetPeg);
+        moves++;
+
+        if (checkWin()) {
+          statusText.innerHTML = `Selamat! Anda menang dengan ${moves} langkah.`;
+        } else {
+          statusText.innerHTML = `Cakram berhasil dipindahkan. Langkah: ${moves}.`;
+        }
+      }
+
+      function isValidMove(targetPeg, disksToMove) {
+        const topDiskOnTarget = targetPeg.lastElementChild;
+        return (
+          !topDiskOnTarget ||
+          parseInt(disksToMove[0].getAttribute("data-size")) <
+            parseInt(topDiskOnTarget.getAttribute("data-size"))
+        );
+      }
+
+      function adjustDiskPositions(peg) {
+        const disks = peg.children;
+        for (let i = 0; i < disks.length; i++) {
+          const disk = disks[i];
+          disk.style.bottom = `${i * 35}px`;
+        }
+      }
+
+      function checkWin() {
+        const peg3 = document.getElementById("peg3");
+        return peg3.children.length === 5;
+      }
+
+      function resetGame() {
+        const pegs = [
+          document.getElementById("peg1"),
+          document.getElementById("peg2"),
+          document.getElementById("peg3"),
+        ];
+        const peg1 = pegs[0];
+        const peg2 = pegs[1];
+        const peg3 = pegs[2];
+
+        peg1.innerHTML = `<div class="disk" data-size="5">5</div><div class="disk" data-size="4">4</div><div class="disk" data-size="3">3</div><div class="disk" data-size="2">2</div><div class="disk" data-size="1">1</div>`;
+        peg2.innerHTML = "";
+        peg3.innerHTML = "";
+
+        moves = 0;
+        document.getElementById("statusText").innerHTML =
+          "Masukkan Cakram dan Tiang Tujuan untuk Memindahkan Cakram.";
+        document.getElementById("diskNumber").value = "";
+        document.getElementById("toPeg").value = "";
+      }
+    </script>
+  </body>
+</html>
